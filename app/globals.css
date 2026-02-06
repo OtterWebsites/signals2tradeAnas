@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: var(--font-nunito);
+}
+
+body {
+  background: white;
+  color: var(--foreground);
+  font-family: var(--font-nunito), sans-serif;
+}
