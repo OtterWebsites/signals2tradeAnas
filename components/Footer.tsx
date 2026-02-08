@@ -328,7 +328,7 @@ export default function Footer() {
 
     {/* Copyright */}
     <div className="pb-15  pt-12 text-center text-xs text-gray-500">
-      Copyright © 2026 Signal2Trade. All Rights Reserved.
+      Copyright © 2026 [BRAND]. All Rights Reserved.
     </div>
   </div>
 </div>
