@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Play, X } from "lucide-react";
 
 type VideoItem = {
@@ -12,7 +12,6 @@ type VideoItem = {
 };
 
 const videos: VideoItem[] = [
-  // ✅ 8 previously provided Wistia videos
   { id: "w1", type: "wistia", mediaId: "s7i53j4klc", aspect: "1.7777777777777777" },
   { id: "w2", type: "wistia", mediaId: "tcksbcif7x", aspect: "1.7777777777777777" },
   { id: "w3", type: "wistia", mediaId: "o2h63xj3j7", aspect: "1.7777777777777777" },
@@ -21,8 +20,6 @@ const videos: VideoItem[] = [
   { id: "w6", type: "wistia", mediaId: "mxhauwls7d", aspect: "1.7777777777777777" },
   { id: "w7", type: "wistia", mediaId: "och156vzt8", aspect: "1.7777777777777777" },
   { id: "w8", type: "wistia", mediaId: "hu43a5dzh4", aspect: "1.7777777777777777" },
-
-  // ✅ NEW 9th Wistia video (replaced the cloudinary one)
   { id: "w9", type: "wistia", mediaId: "6pc4oupbrm", aspect: "1.7777777777777777" },
 ];
 
@@ -37,18 +34,75 @@ function ensureScript(src: string, type?: string) {
   document.body.appendChild(s);
 }
 
-function wistiaThumbHd(mediaId: string) {
-  // ✅ HD thumbnail for landscape grid
-  return `https://fast.wistia.com/embed/medias/${mediaId}/swatch?image_crop_resized=1280x720`;
+// ✅ Fallback (works even if oEmbed fails)
+function wistiaSwatchHd(mediaId: string) {
+  return `https://fast.wistia.com/embed/medias/${mediaId}/swatch?image_crop_resized=1920x1080&image_quality=100`;
 }
 
-function VideoCard({
-  mediaId,
-  onClick,
-}: {
-  mediaId: string;
-  onClick: () => void;
-}) {
+/**
+ * ✅ Convert any Wistia image URL into true HD size/quality
+ * Keeps host/path, just applies Wistia image params.
+ */
+function toHdImageUrl(url: string, w = 1920, h = 1080) {
+  try {
+    const u = new URL(url);
+    // Force crop resized for sharp 16:9 and max quality
+    u.searchParams.set("image_crop_resized", `${w}x${h}`);
+    u.searchParams.set("image_quality", "100");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * ✅ oEmbed thumbnail fetch (client-side)
+ * Returns a sharp still (thumbnail_url) if public/available.
+ */
+async function fetchWistiaThumbFromOembed(mediaId: string, signal?: AbortSignal) {
+  const wistiaMediaUrl = `https://home.wistia.com/medias/${mediaId}`;
+  const endpoint = `https://fast.wistia.com/oembed?url=${encodeURIComponent(
+    wistiaMediaUrl
+  )}&format=json`;
+
+  const res = await fetch(endpoint, { signal });
+  if (!res.ok) throw new Error(`oEmbed failed: ${res.status}`);
+  const data = (await res.json()) as { thumbnail_url?: string };
+
+  if (!data.thumbnail_url) throw new Error("No thumbnail_url in oEmbed response");
+  return toHdImageUrl(data.thumbnail_url, 1920, 1080);
+}
+
+// ✅ simple in-memory cache so we don't refetch thumbnails
+const thumbCache = new Map<string, string>();
+
+function VideoCard({ mediaId, onClick }: { mediaId: string; onClick: () => void }) {
+  const [src, setSrc] = useState<string>(() => thumbCache.get(mediaId) || wistiaSwatchHd(mediaId));
+  const [isLoaded, setIsLoaded] = useState(false);
+  const triedRef = useRef(false);
+
+  useEffect(() => {
+    if (thumbCache.has(mediaId)) {
+      setSrc(thumbCache.get(mediaId)!);
+      return;
+    }
+    if (triedRef.current) return;
+    triedRef.current = true;
+
+    const controller = new AbortController();
+
+    fetchWistiaThumbFromOembed(mediaId, controller.signal)
+      .then((hd) => {
+        thumbCache.set(mediaId, hd);
+        setSrc(hd);
+      })
+      .catch(() => {
+        // fallback stays swatch (already set)
+      });
+
+    return () => controller.abort();
+  }, [mediaId]);
+
   return (
     <button
       type="button"
@@ -56,12 +110,21 @@ function VideoCard({
       className="group relative w-full overflow-hidden rounded-2xl bg-black shadow-[0_12px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/10"
     >
       <div className="relative aspect-video w-full">
-        {/* ✅ HD Poster */}
+        {/* ✅ Always show something (no black flash) */}
+        {!isLoaded && <div className="absolute inset-0 bg-black" />}
+
         <img
-          src={wistiaThumbHd(mediaId)}
+          src={src}
           alt="Interview video"
           className="h-full w-full object-cover"
           loading="lazy"
+          decoding="async"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => {
+            // If oEmbed thumb breaks for some reason, fallback to swatch
+            const fallback = wistiaSwatchHd(mediaId);
+            setSrc(fallback);
+          }}
         />
 
         {/* Dark top strip */}
@@ -82,12 +145,10 @@ export default function MemberInterviewsSection() {
   const [active, setActive] = useState<ActiveState>(null);
   const title = useMemo(() => "Interviews with Members", []);
 
-  // Load Wistia core player once
   useEffect(() => {
     ensureScript("https://fast.wistia.com/player.js");
   }, []);
 
-  // When opening a Wistia video, load its embed module
   useEffect(() => {
     if (!active) return;
     ensureScript(`https://fast.wistia.com/embed/${active.mediaId}.js`, "module");
@@ -95,10 +156,10 @@ export default function MemberInterviewsSection() {
 
   const renderWistiaEmbed = (mediaId: string, aspect: string) => `
     <style>
+      /* ✅ Use same HD swatch as placeholder while player loads */
       wistia-player[media-id='${mediaId}']:not(:defined) {
-        background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${mediaId}/swatch?image_crop_resized=1280x720');
+        background: center / cover no-repeat url('${wistiaSwatchHd(mediaId)}');
         display: block;
-        filter: blur(5px);
         padding-top: 56.25%;
       }
       wistia-player[media-id='${mediaId}']{
@@ -113,7 +174,6 @@ export default function MemberInterviewsSection() {
   return (
     <section className="w-full bg-white py-12">
       <div className="mx-auto max-w-6xl px-4">
-        {/* Heading */}
         <div className="text-center">
           <h2 className="text-2xl font-extrabold tracking-wide text-gray-900 sm:text-3xl">
             {title}
@@ -121,7 +181,6 @@ export default function MemberInterviewsSection() {
           <div className="mx-auto mt-3 h-[2px] w-40 bg-emerald-500" />
         </div>
 
-        {/* Grid */}
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {videos.map((v) => (
             <VideoCard
@@ -133,7 +192,6 @@ export default function MemberInterviewsSection() {
         </div>
       </div>
 
-      {/* Modal */}
       {active && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4"

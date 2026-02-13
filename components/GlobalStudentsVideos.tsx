@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Play, X } from "lucide-react";
 
-// ✅ Client-provided Wistia video IDs (same order)
+// ✅ Client-provided Wistia video IDs
 const wistiaVideos = [
   { id: "zuiyqothgc", aspect: "0.5625" },
   { id: "kh0l7jgfbr", aspect: "0.5660377358490566" },
@@ -13,41 +13,67 @@ const wistiaVideos = [
   { id: "lrsknsyqvg", aspect: "0.565625" },
 ];
 
+function ensureScript(src: string, type?: string) {
+  if (document.querySelector(`script[src="${src}"]`)) return;
+  const s = document.createElement("script");
+  s.src = src;
+  s.async = true;
+  if (type) s.type = type;
+  document.body.appendChild(s);
+}
+
+/* ---------------- HD THUMBNAIL LOGIC (Same as Interview Section) ---------------- */
+
+// fallback swatch
+function wistiaFallback(mediaId: string) {
+  return `https://fast.wistia.com/embed/medias/${mediaId}/swatch?image_crop_resized=1600x2133&image_quality=100`;
+}
+
+// convert oembed thumbnail to HD
+function toHd(url: string) {
+  const u = new URL(url);
+  u.searchParams.set("image_crop_resized", "1600x2133");
+  u.searchParams.set("image_quality", "100");
+  return u.toString();
+}
+
+async function fetchHdThumb(mediaId: string, signal?: AbortSignal) {
+  const wistiaUrl = `https://home.wistia.com/medias/${mediaId}`;
+  const endpoint = `https://fast.wistia.com/oembed?url=${encodeURIComponent(
+    wistiaUrl
+  )}&format=json`;
+
+  const res = await fetch(endpoint, { signal });
+  if (!res.ok) throw new Error("oEmbed failed");
+
+  const data = await res.json();
+  if (!data.thumbnail_url) throw new Error("No thumbnail");
+
+  return toHd(data.thumbnail_url);
+}
+
+const thumbCache = new Map<string, string>();
+
+/* ---------------- COMPONENT ---------------- */
+
 export default function GlobalStudentsVideos() {
   const [active, setActive] = useState<string | null>(null);
   const [activeAspect, setActiveAspect] = useState<string>("0.5625");
 
-  // Load Wistia core player once
   useEffect(() => {
-    const playerSrc = "https://fast.wistia.com/player.js";
-    if (!document.querySelector(`script[src="${playerSrc}"]`)) {
-      const s = document.createElement("script");
-      s.src = playerSrc;
-      s.async = true;
-      document.body.appendChild(s);
-    }
+    ensureScript("https://fast.wistia.com/player.js");
   }, []);
 
-  // Load embed script when modal opens
   useEffect(() => {
     if (!active) return;
-
-    const embedSrc = `https://fast.wistia.com/embed/${active}.js`;
-    if (!document.querySelector(`script[src="${embedSrc}"]`)) {
-      const s = document.createElement("script");
-      s.src = embedSrc;
-      s.async = true;
-      s.type = "module";
-      document.body.appendChild(s);
-    }
+    ensureScript(`https://fast.wistia.com/embed/${active}.js`, "module");
   }, [active]);
 
   const renderEmbed = (id: string, aspect: string) => `
     <style>
       wistia-player[media-id='${id}']:not(:defined) {
-        background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${id}/swatch');
+        background: center / cover no-repeat url('${wistiaFallback(id)}');
         display: block;
-        filter: blur(5px);
         padding-top: ${100 / Number(aspect)}%;
       }
       wistia-player[media-id='${id}'] {
@@ -73,31 +99,15 @@ export default function GlobalStudentsVideos() {
         {/* Grid */}
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {wistiaVideos.map((v) => (
-            <button
+            <VideoCard
               key={v.id}
-              type="button"
+              mediaId={v.id}
+              aspect={v.aspect}
               onClick={() => {
                 setActive(v.id);
                 setActiveAspect(v.aspect);
               }}
-              className="group relative overflow-hidden rounded-2xl bg-gray-200 shadow-md"
-            >
-              <div className="relative aspect-[3/4] w-full">
-                {/* Thumbnail */}
-                <img
-                  src={`https://fast.wistia.com/embed/medias/${v.id}/swatch`}
-                  alt="Student video"
-                  className="h-full w-full object-cover"
-                />
-
-                {/* Play overlay */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 shadow-[0_15px_35px_rgba(16,185,129,0.35)] transition group-hover:scale-105">
-                    <Play className="h-8 w-8 text-white" fill="white" />
-                  </span>
-                </div>
-              </div>
-            </button>
+            />
           ))}
         </div>
       </div>
@@ -129,5 +139,69 @@ export default function GlobalStudentsVideos() {
         </div>
       )}
     </section>
+  );
+}
+
+/* ---------------- Video Card with HD Thumb ---------------- */
+
+function VideoCard({
+  mediaId,
+  aspect,
+  onClick,
+}: {
+  mediaId: string;
+  aspect: string;
+  onClick: () => void;
+}) {
+  const [src, setSrc] = useState<string>(
+    thumbCache.get(mediaId) || wistiaFallback(mediaId)
+  );
+  const tried = useRef(false);
+
+  useEffect(() => {
+    if (thumbCache.has(mediaId)) {
+      setSrc(thumbCache.get(mediaId)!);
+      return;
+    }
+    if (tried.current) return;
+    tried.current = true;
+
+    const controller = new AbortController();
+
+    fetchHdThumb(mediaId, controller.signal)
+      .then((hd) => {
+        thumbCache.set(mediaId, hd);
+        setSrc(hd);
+      })
+      .catch(() => {
+        // fallback already set
+      });
+
+    return () => controller.abort();
+  }, [mediaId]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative overflow-hidden rounded-2xl bg-gray-200 shadow-md"
+    >
+      <div className="relative aspect-[3/4] w-full">
+        <img
+          src={src}
+          alt="Student video"
+          className="h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+          onError={() => setSrc(wistiaFallback(mediaId))}
+        />
+
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 shadow-[0_15px_35px_rgba(16,185,129,0.35)] transition group-hover:scale-105">
+            <Play className="h-8 w-8 text-white" fill="white" />
+          </span>
+        </div>
+      </div>
+    </button>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const navLinks = [
@@ -11,6 +12,9 @@ const navLinks = [
 ];
 
 const TELEGRAM_LINK = "https://t.me/+qTBeOiPtYEkyOTBi";
+
+// ✅ Put your logo in /public/logo.png (or change this path)
+const LOGO_SRC = "/profile.png";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -45,9 +49,18 @@ export default function Navbar() {
             href="/"
             className="flex items-center gap-2 font-semibold tracking-wide text-white"
           >
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/15">
-              <span className="text-sm">S</span>
+            {/* ✅ Logo Image (replaces the 'S' icon) */}
+            <span className="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden ">
+              <Image
+                src={LOGO_SRC}
+                alt="Signals2Trade Logo"
+                fill
+                sizes="32px"
+                className="object-contain p-1"
+                priority
+              />
             </span>
+
             <span className="text-sm lg:text-base">
               <span className="opacity-90">SIGNALS</span>
               <span className="opacity-60">2</span>
