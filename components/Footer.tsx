@@ -413,7 +413,7 @@ export default function Footer() {
         {/* Legal content (left aligned) */}
         <div className="mt-8 space-y-6 text-[15px] leading-relaxed text-gray-400">
           <p>
-            [BRAND] is a marketing/affiliate business registered at #10 Manoel
+            [Signals2trade] is a marketing/affiliate business registered at #10 Manoel
             Street, Castries, St.Lucia. Content is for informational and
             promotional purposes only.
           </p>
@@ -529,7 +529,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <div className="pb-15 pt-12 text-center text-xs text-gray-500">
-            Copyright © 2026 [BRAND]. All Rights Reserved.
+            Copyright © 2026 [Signals2trade]. All Rights Reserved.
           </div>
         </div>
       </div>
