@@ -115,70 +115,74 @@ export default function CreateAccountSection() {
             }}
           />
 
-          {/* MAIN GRID */}
-          <div className="relative grid min-h-[560px] items-center gap-12 p-8 sm:p-12 lg:grid-cols-2">
-            {/* Left: benefits (vertically centered) */}
-            <div className="flex h-full items-center">
-              <div className="w-full max-w-lg space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                  ✓ 100% Free access
+          <div className="relative p-8 sm:p-12">
+            {/* TOP: Promo + Countdown (centered) */}
+            <div className="mx-auto w-full max-w-3xl">
+              <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 px-6 py-5 shadow-sm">
+                <div className="absolute -left-10 -top-10 h-24 w-24 rounded-full bg-emerald-200/30 blur-2xl" />
+                <div className="absolute -right-10 -bottom-10 h-24 w-24 rounded-full bg-sky-200/30 blur-2xl" />
+
+                <p className="relative text-center text-sm font-semibold leading-snug text-gray-900 sm:text-base">
+                  TO SECURE A UNIQUE{" "}
+                  <span className="text-emerald-700">200% WITHDRAWABLE</span> TRADING BONUS —{" "}
+                  <span className="underline decoration-emerald-300 underline-offset-4">
+                    REGISTER NOW
+                  </span>{" "}
+                  AND WE WILL CONTACT YOU
+                </p>
+
+                <div className="relative mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold text-white">
+                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    {countdownLabel}
+                  </div>
+
+                  <div
+                    className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold tabular-nums text-emerald-800"
+                    aria-live="polite"
+                  >
+                    {formatTime(remaining)}
+                  </div>
                 </div>
 
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                  What you get for free
-                </h2>
-
-                <ul className="space-y-5 pt-4">
-                  {benefits.map((text, idx) => (
-                    <li key={`${idx}-${text}`} className="flex items-start gap-4">
-                      <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200">
-                        ✓
-                      </span>
-                      <p className="text-base leading-relaxed text-gray-700">{text}</p>
-                    </li>
-                  ))}
-                </ul>
+                <p className="relative mt-3 text-center text-xs text-gray-600">
+                  Limited-time bonus window. Register to secure your spot.
+                </p>
               </div>
             </div>
 
-            {/* Right: promo + countdown + form (vertically centered) */}
-            <div className="flex h-full items-center justify-center">
-              <div className="w-full max-w-md">
-                {/* Promo + Countdown */}
-                <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 px-5 py-4 shadow-sm">
-                  <div className="absolute -left-10 -top-10 h-24 w-24 rounded-full bg-emerald-200/30 blur-2xl" />
-                  <div className="absolute -right-10 -bottom-10 h-24 w-24 rounded-full bg-sky-200/30 blur-2xl" />
+            {/* Divider spacing */}
+            <div className="h-10" />
 
-                  <p className="relative text-sm font-semibold leading-snug text-gray-900">
-                    TO SECURE A UNIQUE{" "}
-                    <span className="text-emerald-700">200% WITHDRAWABLE</span> TRADING BONUS —{" "}
-                    <span className="underline decoration-emerald-300 underline-offset-4">
-                      REGISTER NOW
-                    </span>{" "}
-                    AND WE WILL CONTACT YOU
-                  </p>
-
-                  <div className="relative mt-3 flex items-center justify-between gap-3">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold text-white">
-                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      {countdownLabel}
-                    </div>
-
-                    <div
-                      className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-bold tabular-nums text-emerald-800"
-                      aria-live="polite"
-                    >
-                      {formatTime(remaining)}
-                    </div>
+            {/* BOTTOM: Left benefits + Right form (same level) */}
+            <div className="grid items-start gap-12 lg:grid-cols-2">
+              {/* Left: benefits */}
+              <div className="flex h-full items-start">
+                <div className="w-full max-w-lg space-y-6">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                    ✓ 100% Free access
                   </div>
 
-                  <p className="relative mt-2 text-xs text-gray-600">
-                    Limited-time bonus window. Register to secure your spot.
-                  </p>
-                </div>
+                  <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                    What you get for free
+                  </h2>
 
-                {/* Form Card */}
-                <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <ul className="space-y-5 pt-4">
+                    {benefits.map((text, idx) => (
+                      <li key={`${idx}-${text}`} className="flex items-start gap-4">
+                        <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200">
+                          ✓
+                        </span>
+                        <p className="text-base leading-relaxed text-gray-700">{text}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Right: form */}
+              <div className="flex h-full items-start justify-center lg:justify-end">
+                <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                   <h3 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                     Create account
                   </h3>
@@ -315,7 +319,7 @@ export default function CreateAccountSection() {
                 </div>
               </div>
             </div>
-            {/* END Right */}
+            {/* END bottom grid */}
           </div>
         </div>
       </div>
