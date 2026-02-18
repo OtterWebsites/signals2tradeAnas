@@ -9,7 +9,7 @@ export default function HeroSection() {
       <div className="w-full bg-white">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center mt-25 md:mt-5">
-            <span className="text-sm text-gray-600">Our customers </span>
+            <span className="text-sm text-gray-600">Our customers say</span>
             <span className="text-sm font-semibold text-gray-900">Excellent</span>
 
             <div className="flex items-center gap-1">
