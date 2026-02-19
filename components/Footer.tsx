@@ -11,7 +11,6 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
-import { div } from "framer-motion/client";
 
 type AccordionItem = {
   title: string;
@@ -324,6 +323,76 @@ export default function Footer() {
         </div>
       ),
     },
+
+    // ✅ NEW: Tauro Market Entities (as per client)
+    {
+      title: "Tauro Market Entities",
+      content: (
+        <div className="space-y-7">
+          <div className="space-y-2">
+            <h3 className="font-bold text-[15px]">Global Tauro Ltd</h3>
+            <p>
+              Trading under Tauro Markets, is authorised, licensed, and
+              regulated by the Financial Services Commission (FSC) of Mauritius,
+              Investment Dealer License no. <span className="font-semibold">GB24202909</span>.
+            </p>
+            <p>
+              <span className="font-semibold text-gray-300">Registered Office:</span>{" "}
+              Office 306, 3rd Floor, Ebene Junction, Rue de la Democratie, Ebene
+              72201, Republic of Mauritius.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-bold text-[15px]">
+              Headquarters: Dubai, United Arab Emirates
+            </h3>
+            <p>
+              <span className="font-semibold text-gray-300">
+                Operational Focus:
+              </span>{" "}
+              Serves as the primary management hub for technology, compliance,
+              and Middle East business development.
+            </p>
+            <p>
+              <span className="font-semibold text-gray-300">Management:</span>{" "}
+              Led by CEO Alexander Oelfke and Partner-CEO MENA Nadine Azzam.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-bold text-[15px]">
+              JM Financial LLC (St. Vincent &amp; the Grenadines)
+            </h3>
+            <p>
+              JM Financial LLC, trading under Tauro Markets, is registered in
+              Saint Vincent and the Grenadines as a Limited Liability Company
+              with registration number{" "}
+              <span className="font-semibold">2496 LLC 2022</span>.
+            </p>
+            <p>
+              <span className="font-semibold text-gray-300">Registered Office:</span>{" "}
+              Suite 305, Griffith Corporate Centre, Beachmont, Kingstown, Saint
+              Vincent &amp; the Grenadines.
+            </p>
+            <p>
+              <span className="font-semibold text-gray-300">
+                Regulatory Status:
+              </span>{" "}
+              Registered with the Financial Services Authority (FSA) of St.
+              Vincent and the Grenadines.
+            </p>
+            <p>
+              <span className="font-semibold text-gray-300">
+                Business Nature:
+              </span>{" "}
+              Provides multi-asset trading services, including Forex and CFDs,
+              to international retail and institutional clients.
+            </p>
+          </div>
+        </div>
+      ),
+    },
   ];
 
   const legalLinks = [
@@ -413,8 +482,8 @@ export default function Footer() {
         {/* Legal content (left aligned) */}
         <div className="mt-8 space-y-6 text-[15px] leading-relaxed text-gray-400">
           <p>
-            [Signals2trade] is a marketing/affiliate business registered at #10 Manoel
-            Street, Castries, St.Lucia. Content is for informational and
+            [Signals2trade] is a marketing/affiliate business registered at #10
+            Manoel Street, Castries, St.Lucia. Content is for informational and
             promotional purposes only.
           </p>
 
