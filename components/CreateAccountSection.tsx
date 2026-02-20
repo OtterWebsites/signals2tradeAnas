@@ -13,6 +13,206 @@ const benefits = [
 const COUNTDOWN_SECONDS = 15 * 60;
 const STORAGE_KEY = "bonus_countdown_expires_at_v1";
 
+// Full world countries list (common English names)
+const COUNTRIES = [
+  "Afghanistan",
+  "Albania",
+  "Algeria",
+  "Andorra",
+  "Angola",
+  "Antigua and Barbuda",
+  "Argentina",
+  "Armenia",
+  "Australia",
+  "Austria",
+  "Azerbaijan",
+  "Bahamas",
+  "Bahrain",
+  "Bangladesh",
+  "Barbados",
+  "Belarus",
+  "Belgium",
+  "Belize",
+  "Benin",
+  "Bhutan",
+  "Bolivia",
+  "Bosnia and Herzegovina",
+  "Botswana",
+  "Brazil",
+  "Brunei",
+  "Bulgaria",
+  "Burkina Faso",
+  "Burundi",
+  "Cabo Verde",
+  "Cambodia",
+  "Cameroon",
+  "Canada",
+  "Central African Republic",
+  "Chad",
+  "Chile",
+  "China",
+  "Colombia",
+  "Comoros",
+  "Congo (Congo-Brazzaville)",
+  "Congo (Democratic Republic of the Congo)",
+  "Costa Rica",
+  "Cote d’Ivoire",
+  "Croatia",
+  "Cuba",
+  "Cyprus",
+  "Czechia (Czech Republic)",
+  "Denmark",
+  "Djibouti",
+  "Dominica",
+  "Dominican Republic",
+  "Ecuador",
+  "Egypt",
+  "El Salvador",
+  "Equatorial Guinea",
+  "Eritrea",
+  "Estonia",
+  "Eswatini (fmr. “Swaziland”)",
+  "Ethiopia",
+  "Fiji",
+  "Finland",
+  "France",
+  "Gabon",
+  "Gambia",
+  "Georgia",
+  "Germany",
+  "Ghana",
+  "Greece",
+  "Grenada",
+  "Guatemala",
+  "Guinea",
+  "Guinea-Bissau",
+  "Guyana",
+  "Haiti",
+  "Honduras",
+  "Hungary",
+  "Iceland",
+  "India",
+  "Indonesia",
+  "Iran",
+  "Iraq",
+  "Ireland",
+  "Israel",
+  "Italy",
+  "Jamaica",
+  "Japan",
+  "Jordan",
+  "Kazakhstan",
+  "Kenya",
+  "Kiribati",
+  "Kuwait",
+  "Kyrgyzstan",
+  "Laos",
+  "Latvia",
+  "Lebanon",
+  "Lesotho",
+  "Liberia",
+  "Libya",
+  "Liechtenstein",
+  "Lithuania",
+  "Luxembourg",
+  "Madagascar",
+  "Malawi",
+  "Malaysia",
+  "Maldives",
+  "Mali",
+  "Malta",
+  "Marshall Islands",
+  "Mauritania",
+  "Mauritius",
+  "Mexico",
+  "Micronesia",
+  "Moldova",
+  "Monaco",
+  "Mongolia",
+  "Montenegro",
+  "Morocco",
+  "Mozambique",
+  "Myanmar (formerly Burma)",
+  "Namibia",
+  "Nauru",
+  "Nepal",
+  "Netherlands",
+  "New Zealand",
+  "Nicaragua",
+  "Niger",
+  "Nigeria",
+  "North Korea",
+  "North Macedonia",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Palau",
+  "Palestine State",
+  "Panama",
+  "Papua New Guinea",
+  "Paraguay",
+  "Peru",
+  "Philippines",
+  "Poland",
+  "Portugal",
+  "Qatar",
+  "Romania",
+  "Russia",
+  "Rwanda",
+  "Saint Kitts and Nevis",
+  "Saint Lucia",
+  "Saint Vincent and the Grenadines",
+  "Samoa",
+  "San Marino",
+  "Sao Tome and Principe",
+  "Saudi Arabia",
+  "Senegal",
+  "Serbia",
+  "Seychelles",
+  "Sierra Leone",
+  "Singapore",
+  "Slovakia",
+  "Slovenia",
+  "Solomon Islands",
+  "Somalia",
+  "South Africa",
+  "South Korea",
+  "South Sudan",
+  "Spain",
+  "Sri Lanka",
+  "Sudan",
+  "Suriname",
+  "Sweden",
+  "Switzerland",
+  "Syria",
+  "Taiwan",
+  "Tajikistan",
+  "Tanzania",
+  "Thailand",
+  "Timor-Leste",
+  "Togo",
+  "Tonga",
+  "Trinidad and Tobago",
+  "Tunisia",
+  "Turkey",
+  "Turkmenistan",
+  "Tuvalu",
+  "Uganda",
+  "Ukraine",
+  "United Arab Emirates",
+  "United Kingdom",
+  "United States",
+  "Uruguay",
+  "Uzbekistan",
+  "Vanuatu",
+  "Vatican City",
+  "Venezuela",
+  "Vietnam",
+  "Yemen",
+  "Zambia",
+  "Zimbabwe",
+];
+
 function formatTime(totalSeconds: number) {
   const s = Math.max(0, totalSeconds);
   const mm = String(Math.floor(s / 60)).padStart(2, "0");
@@ -22,6 +222,7 @@ function formatTime(totalSeconds: number) {
 
 export default function CreateAccountSection() {
   // form state
+  const [country, setCountry] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -70,7 +271,7 @@ export default function CreateAccountSection() {
     e.preventDefault();
     setStatus(null);
 
-    const payload = { firstName, lastName, email, phone };
+    const payload = { firstName, lastName, email, phone, country };
 
     try {
       setIsSubmitting(true);
@@ -90,6 +291,7 @@ export default function CreateAccountSection() {
 
       setStatus({ type: "success", msg: "Registered successfully!" });
 
+      setCountry("");
       setFirstName("");
       setLastName("");
       setEmail("");
@@ -189,6 +391,40 @@ export default function CreateAccountSection() {
 
                   <form onSubmit={onSubmit} className="mt-6">
                     <div className="space-y-4">
+                      {/* Country */}
+                      <div className="relative">
+                        <select
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          required
+                          className="h-14 w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 pr-12 text-sm text-gray-900 shadow-sm outline-none focus:ring-2 focus:ring-emerald-200"
+                        >
+                          <option value="" disabled>
+                            Select country of residence...
+                          </option>
+                          {COUNTRIES.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+
+                        {/* dropdown chevron */}
+                        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M7 10l5 5 5-5"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
+
+                        <span className="absolute right-10 top-1/2 -translate-y-1/2 text-red-500">*</span>
+                      </div>
+
                       {/* First name */}
                       <div className="relative">
                         <input
@@ -285,7 +521,39 @@ export default function CreateAccountSection() {
                         </div>
                       )}
 
-                      {/* Register button (always works; countdown is visual only) */}
+                      {/* Terms (NOT marked out => keep/add) */}
+                      <p className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-[12px] leading-relaxed text-gray-700">
+                        I hereby verify that I am 18 years or older, I have read and accept your{" "}
+                        <a
+                          className="text-sky-600 underline"
+                          href="#"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          General Terms &amp; Conditions of Tauro Markets
+                        </a>
+                        ,{" "}
+                        <a
+                          className="text-sky-600 underline"
+                          href="#"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Legal Documents
+                        </a>
+                        ,{" "}
+                        <a
+                          className="text-sky-600 underline"
+                          href="#"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Personal Data Protection
+                        </a>
+                        .
+                      </p>
+
+                      {/* Register button */}
                       <button
                         type="submit"
                         disabled={isSubmitting}

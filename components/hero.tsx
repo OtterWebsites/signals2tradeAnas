@@ -34,14 +34,28 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Video Section (Native Controls) */}
+      {/* Heading Above Video (Client Required) */}
+      <div className="mx-auto max-w-6xl px-4 pt-6 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-gray-900">
+          COPY{" "}
+          <span className="text-emerald-600">
+            MY PREMIUM SIGNALS FOR FREE
+          </span>
+          <br />
+          AND CONSTANTLY
+        </h1>
+      </div>
+
+      {/* Video Section (Silent Autoplay) */}
       <div className="mx-auto max-w-6xl px-4 py-8">
         <div className="mx-auto w-full">
           <video
-            className="w-full h-[240px] sm:h-[320px] md:h-[470px] lg:h-[590px] object-cover"
-            controls
+            className="w-full h-[240px] sm:h-[320px] md:h-[470px] lg:h-[590px] object-cover  shadow-lg"
+            autoPlay
+            muted
+            loop
             playsInline
-            preload="metadata"
+            preload="auto"
           >
             <source
               src="https://res.cloudinary.com/dvecd8hh8/video/upload/v1770386157/hero_amjfbp.webm"

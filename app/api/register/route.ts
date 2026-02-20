@@ -6,6 +6,7 @@ type Payload = {
   lastName: string;
   email: string;
   phone: string;
+  country: string;
 };
 
 function getEnv(name: string) {
@@ -22,8 +23,9 @@ export async function POST(req: Request) {
     const lastName = (body.lastName || "").trim();
     const email = (body.email || "").trim();
     const phone = (body.phone || "").trim();
+    const country = (body.country || "").trim();
 
-    if (!firstName || !lastName || !email || !phone) {
+    if (!firstName || !lastName || !email || !phone || !country) {
       return NextResponse.json(
         { ok: false, message: "All fields are required." },
         { status: 400 }
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
 
     const sheets = google.sheets({ version: "v4", auth });
 
-    // Append row: you can reorder columns as you want
+    // Append row (A:F)
     const values = [
       [
         new Date().toISOString(), // timestamp
@@ -52,12 +54,13 @@ export async function POST(req: Request) {
         lastName,
         email,
         phone,
+        country,
       ],
     ];
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
-      range: `${tabName}!A:E`,
+      range: `${tabName}!A:F`,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: { values },
