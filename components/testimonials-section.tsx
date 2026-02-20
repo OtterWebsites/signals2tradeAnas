@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
 import { GridPattern } from "@/components/ui/grid-pattern";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star } from "lucide-react";
 
 type Review = {
   stars: 4 | 5;
@@ -33,8 +32,7 @@ const reviews: Review[] = [
   {
     stars: 5,
     title: "Waqasqureshi",
-    text:
-      "Very smooth experience overall. The guidance and structure is clear...",
+    text: "Very smooth experience overall. The guidance and structure is clear...",
     name: "Waqasqureshi.",
     date: "December 25",
   },
@@ -73,7 +71,7 @@ const reviews: Review[] = [
 
 const REVIEW_LINK = "https://www.trustpilot.com/review/signals2trade.com";
 
-/* ⭐ Stars */
+// ⭐ Stars
 function StarsRow({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-1">
@@ -98,25 +96,19 @@ function StarsRow({ value }: { value: number }) {
 }
 
 export function TestimonialsSection() {
-  const [perView, setPerView] = useState(1);
-  const [index, setIndex] = useState(0);
+  // show-more behavior
+  const INITIAL_COUNT = 3; // start with 3 reviews
+  const STEP = 3; // each "show more" adds 3
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 
-  // responsive cards count
-  useEffect(() => {
-    const handleResize = () => {
-      setPerView(window.innerWidth >= 1024 ? 3 : 1);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const canShowMore = visibleCount < reviews.length;
 
-  const maxIndex = Math.max(0, reviews.length - perView);
+  const visibleReviews = useMemo(() => {
+    return reviews.slice(0, visibleCount);
+  }, [visibleCount]);
 
-  const next = () => setIndex((i) => Math.min(i + 1, maxIndex));
-  const prev = () => setIndex((i) => Math.max(i - 1, 0));
-
-  const translate = perView === 3 ? index * 33.333 : index * 100;
+  const onShowMore = () => setVisibleCount((c) => Math.min(reviews.length, c + STEP));
+  const onShowLess = () => setVisibleCount(INITIAL_COUNT);
 
   return (
     <section className="relative w-full bg-white py-12">
@@ -135,9 +127,7 @@ export function TestimonialsSection() {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center items-center gap-4">
-            <h2 className="text-4xl font-extrabold text-gray-900">
-              Excellent
-            </h2>
+            <h2 className="text-4xl font-extrabold text-gray-900">Excellent</h2>
             <StarsRow value={4} />
           </div>
 
@@ -145,6 +135,8 @@ export function TestimonialsSection() {
             Rated <span className="font-semibold">4.4</span> / 5 on{" "}
             <a
               href={REVIEW_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-semibold text-emerald-600 underline"
             >
               Trustpilot
@@ -152,103 +144,55 @@ export function TestimonialsSection() {
           </p>
         </div>
 
-        {/* ===== Carousel ===== */}
-        <div className="relative mt-12">
-          {/* Arrows */}
-          <div className="pointer-events-none absolute inset-y-0 -left-6 -right-6 flex items-center justify-between lg:-left-14 lg:-right-14 z-20">
+        {/* Reviews Grid */}
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          {visibleReviews.map((r, i) => (
+            <article
+              key={i}
+              className="h-full rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+            >
+              <StarsRow value={r.stars} />
+
+              <div className="mt-2 flex justify-between text-xs text-gray-500">
+                <span className="font-semibold text-gray-700">{r.name}</span>
+                <span>{r.date}</span>
+              </div>
+
+              <h3 className="mt-3 font-extrabold text-gray-900">{r.title}</h3>
+
+              <p className="mt-2 text-sm text-gray-700">{r.text}</p>
+
+              <a
+                href={REVIEW_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-block text-sm font-semibold text-emerald-600 underline"
+              >
+                Read more
+              </a>
+            </article>
+          ))}
+        </div>
+
+        {/* Show More / Show Less */}
+        <div className="mt-10 flex flex-col items-center gap-3">
+          {canShowMore ? (
             <button
-              onClick={prev}
-              disabled={index === 0}
-              className={`pointer-events-auto h-10 w-10 lg:h-16 lg:w-16 rounded-full 
-                bg-white/95 backdrop-blur border border-gray-300 shadow-lg 
-                flex items-center justify-center transition
-                ${
-                  index === 0
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:scale-110 hover:bg-gray-50"
-                }`}
-              aria-label="Previous review"
+              onClick={onShowMore}
+              className="rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
             >
-              <ChevronLeft className="h-5 w-5 lg:h-6 lg:w-6 text-gray-800" />
+              Show more
             </button>
-
+          ) : (
             <button
-              onClick={next}
-              disabled={index === maxIndex}
-              className={`pointer-events-auto h-10 w-10 lg:h-16 lg:w-16 rounded-full 
-                bg-white/95 backdrop-blur border border-gray-300 shadow-lg 
-                flex items-center justify-center transition
-                ${
-                  index === maxIndex
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:scale-110 hover:bg-gray-50"
-                }`}
-              aria-label="Next review"
+              onClick={onShowLess}
+              className="rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
             >
-              <ChevronRight className="h-5 w-5 lg:h-6 lg:w-6 text-gray-800" />
+              Show less
             </button>
-          </div>
+          )}
 
-          {/* viewport */}
-          <div className="overflow-hidden rounded-2xl">
-            <motion.div
-              className="flex -mx-3"
-              animate={{ x: `-${translate}%` }}
-              transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            >
-              {reviews.map((r, i) => (
-                <div
-                  key={i}
-                  className={`shrink-0 px-3 w-full ${
-                    perView === 3 ? "lg:w-1/3" : ""
-                  }`}
-                >
-                  <article className="h-full rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <StarsRow value={r.stars} />
-
-                    <div className="mt-2 flex justify-between text-xs text-gray-500">
-                      <span className="font-semibold text-gray-700">
-                        {r.name}
-                      </span>
-                      <span>{r.date}</span>
-                    </div>
-
-                    <h3 className="mt-3 font-extrabold text-gray-900">
-                      {r.title}
-                    </h3>
-
-                    <p className="mt-2 text-sm text-gray-700">
-                      {r.text}
-                    </p>
-
-                    <a
-                      href={REVIEW_LINK}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 inline-block text-sm font-semibold text-emerald-600 underline"
-                    >
-                      Read more
-                    </a>
-                  </article>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* dots */}
-          <div className="mt-6 flex justify-center gap-2">
-            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setIndex(i)}
-                className={`h-2.5 rounded-full transition ${
-                  i === index
-                    ? "w-7 bg-emerald-500"
-                    : "w-2.5 bg-gray-300"
-                }`}
-              />
-            ))}
-          </div>
+         
         </div>
       </div>
     </section>
